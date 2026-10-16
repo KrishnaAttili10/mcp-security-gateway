@@ -10,6 +10,7 @@ from mcp.server.auth.settings import AuthSettings
 from auth import HospitalTokenVerifier
 from mcp.server.auth.middleware.auth_context import get_access_token
 from consent import init_db, has_consent
+from rate_limiter import is_allowed
 
 
 mcp = MCPServer(
@@ -44,6 +45,9 @@ async def verify_license( physician_id: str) -> str:
         return "Authentication Failed"
 
     hospital_id = access_token.client_id
+    if not is_allowed(hospital_id):
+        log_access(hospital_id, physician_id, "RATE_LIMITED")
+        return "Rate limit exceeded. Please try again later."
 
     if not authorize(hospital_id, physician_id):
         log_access(hospital_id, physician_id, "DENIED")
