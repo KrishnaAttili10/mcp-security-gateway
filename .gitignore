@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Virtual environment
+.venv/
+venv/
+
+# Local databases
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# PyCharm
+.idea/
