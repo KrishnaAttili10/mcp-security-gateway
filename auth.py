@@ -2,6 +2,11 @@
 from mcp.server.auth.provider import TokenVerifier, AccessToken
 import sys
 
+from pathlib import Path
+import jwt
+from jwt_utils import verify_token
+
+PUBLIC_KEY = Path(__file__).with_name("public_key.pem").read_text()
 hospital_keys = {
     "key-a-123": "hospital_a",
     "key-b-456": "hospital_b"
@@ -9,12 +14,23 @@ hospital_keys = {
 
 class HospitalTokenVerifier(TokenVerifier):
 
-    async def verify_token(self, token: str)-> AccessToken:
-        hospital_id = hospital_keys.get(token)
-        if hospital_id is None:
+    async def verify_token(self, token: str) -> AccessToken | None:
+        try:
+            payload = verify_token(token, PUBLIC_KEY)
+
+            hospital_id = payload["sub"]
+
+            if hospital_id not in {"hospital_a", "hospital_b"}:
+                return None
+
+            return AccessToken(
+                token=token,
+                client_id=hospital_id,
+                scopes=[]
+            )
+
+        except jwt.InvalidTokenError:
             return None
-        print("Token recognized:", hospital_id, file=sys.stderr, flush=True)
-        return AccessToken(token = token, client_id=hospital_id, scopes=[])
 
 
 def authenticate(api_key: str) -> str | None:
