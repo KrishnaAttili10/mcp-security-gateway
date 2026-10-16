@@ -1,0 +1,7 @@
+mcp==2.3.0
+fastapi
+uvicorn
+httpx
+PyJWT[crypto]
+pytest
+pytest-asyncio
